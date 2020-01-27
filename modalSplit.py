@@ -1,13 +1,13 @@
 # %%
 import pandas
 import matplotlib as plot
+from pathlib import Path
 
 
 def mainModeValueCounts(dataFrame, seriesName):
     "This does things"
     counts = dataFrame['mainMode'].value_counts() * 100
     counts.name = seriesName  # rename doesn't seem to work, so just assign things here
-    print(counts)
     return counts
 
 
@@ -20,45 +20,43 @@ def getRelative(dataFrame, changedColumns):
     return result
 
 
+def read_csv(listOfCsv):
+    "This function reads supplied csvs and aggregates modal shares"
+    modalSplits = []
+    for file in listOfCsv:
+        csv = pandas.read_csv(dataPath + file, usecols=['mainMode'])
+        valueCounts = mainModeValueCounts(csv, Path(file).stem)
+        modalSplits.append(valueCounts)
+    return modalSplits
+
+
+# %%
 dataPath = 'C:\\Users\\Janek\\Desktop\\nemo_analysis\\'
 
 expectedModalShare = pandas.read_csv(
     dataPath + 'expected-modal-share.csv', index_col='mode')
 
-baseCaseData = pandas.read_csv(dataPath + 'base-case.csv')
-bikeHighways = pandas.read_csv(dataPath + 'bike-highways.csv')
+modalSplits = read_csv(['base-case.csv', 'bike-highways.csv'])
+modalSplits.append(expectedModalShare)
 
-print(expectedModalShare)
-print(baseCaseData[:10])
+modalShare = pandas.concat(modalSplits, axis=1, sort=False).rename(
+    columns={'value': 'expected'})
 
-# %%
-numberOfTrips = baseCaseData.shape[0]
-expectedNumberOfTrips = expectedModalShare['value'].aggregate(sum)
-print('expected number of trips: ' + str(expectedNumberOfTrips))
-print('baseCase number of trips: ' + str(numberOfTrips * 100))
-print('highways number of trips: ' + str(bikeHighways.shape[0] * 100))
+print(modalShare)
 
 
 # %%
-# ----------------------- Modal Share ----------------------
-# the current example is a 1% sample, so we have to scale up by 100
-modalShareSeries = mainModeValueCounts(baseCaseData, 'baseCase')
-bikeHighwaysSeries = mainModeValueCounts(bikeHighways, 'bikeHighways')
+numberOfTrips = modalShare.aggregate(sum)
 
+print('number of trips by scenario')
+print(numberOfTrips)
 
-# we can join on mode here, pandas just does the right thing with the counted series here
-compare = pandas.concat([expectedModalShare, modalShareSeries, bikeHighwaysSeries],
-                        axis=1, sort=False).rename(columns={'value': 'expected'})
-compare.index.name = 'mode'
-print(compare)
-
+# %%
 # plot absolute
-compare.plot.bar()
+modalShare.plot.bar()
 
 # %%
 # plot relative
-relative = getRelative(compare, ['expected', 'baseCase', 'bikeHighways'])
+# this should somehow work automagically
+relative = getRelative(modalShare, ['expected', 'base-case', 'bike-highways'])
 relative.plot.bar()
-
-
-# %%
