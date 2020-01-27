@@ -37,7 +37,7 @@ expectedModalShare = pandas.read_csv(
     dataPath + 'expected-modal-share.csv', index_col='mode')
 
 modalSplits = read_csv(['base-case.csv', 'bike-highways.csv'])
-modalSplits.append(expectedModalShare)
+modalSplits.insert(0, expectedModalShare)
 
 modalShare = pandas.concat(modalSplits, axis=1, sort=False).rename(
     columns={'value': 'expected'})
