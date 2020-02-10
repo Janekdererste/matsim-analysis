@@ -6,7 +6,7 @@ import MatsimNetworkReader
 class TestNetworkHandler(TestCase):
 
     def test(self):
-        network = MatsimNetworkReader.read('C:\\Users\\Janek\\PycharmProjects\\matsim-analysis\\test.xml.gz')
+        network = MatsimNetworkReader.read('/test_network.xml.gz')
 
         # we know how many links and nodes the test network has
         self.assertEqual(15, len(network.nodes()))

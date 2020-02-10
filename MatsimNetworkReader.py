@@ -103,6 +103,10 @@ class NetworkHandler(xml.sax.ContentHandler):
         else:
             print('start element', name, ' ', str(attrs))
 
+    def characters(self, content):
+        # don't do anything here, but skip all the characters to save some memory
+        pass
+
 
 """ Reads a Matsim network xml file. Currently, custom attributes are not parsed.
 """
