@@ -1,3 +1,4 @@
+import gzip
 import xml.sax
 from xml import sax
 
@@ -12,8 +13,16 @@ class Node(Entity):
 
     def __init__(self, entity_id, x, y):
         super().__init__(entity_id)
-        self.x = x
-        self.y = y
+        self.x = float(x)
+        self.y = float(y)
+        self.in_links = set()
+        self.out_links = set()
+
+    def add_in_link(self, link):
+        self.in_links.add(link)
+
+    def add_out_link(self, link):
+        self.out_links.add(link)
 
 
 class Link(Entity):
@@ -21,10 +30,10 @@ class Link(Entity):
     def __init__(self, entity_id, from_node, to_node, length, capacity, freespeed, permlanes, modes):
         super().__init__(entity_id)
         self.modes = modes
-        self.permlanes = permlanes
-        self.freespeed = freespeed
-        self.capacity = capacity
-        self.length = length
+        self.permlanes = float(permlanes)
+        self.freespeed = float(freespeed)
+        self.capacity = float(capacity)
+        self.length = float(length)
         self.to_node = to_node
         self.from_node = from_node
 
@@ -40,6 +49,24 @@ class Network:
     def __init__(self, nodes, links):
         self._nodes = nodes
         self._links = links
+
+    @classmethod
+    def from_links(cls, links):
+        nodes = {}
+        for link in links.values():
+            from_node = cls.get_value(nodes, link.from_node.id, link.from_node)
+            from_node.add_out_link(link)
+            to_node = cls.get_value(nodes, link.to_node.id, link.to_node)
+            to_node.add_in_link(link)
+
+        return Network(nodes, links)
+
+    @classmethod
+    def get_value(cls, dict, key, value):
+        if key not in dict:
+            dict[key] = value
+
+        return dict[key]
 
 
 class NetworkHandler(xml.sax.ContentHandler):
@@ -64,15 +91,25 @@ class NetworkHandler(xml.sax.ContentHandler):
             node = Node(attrs.get('id'), attrs.get('x'), attrs.get('y'))
             self._nodes[node.id] = node
         elif name == NetworkHandler.LINK:
-            link = Link(attrs.get('id'), self._nodes[attrs.get('from')], self._nodes[attrs.get('to')],
-                        attrs.get('length'), attrs.get('capactiy'), attrs.get('freespeed'), attrs.get('permlanes'),
+            link = Link(attrs.get('id'),
+                        self._nodes[attrs.get('from')],
+                        self._nodes[attrs.get('to')],
+                        attrs.get('length'),
+                        attrs.get('capacity'),
+                        attrs.get('freespeed'),
+                        attrs.get('permlanes'),
                         str(attrs.get('modes')).split(','))
             self._links[link.id] = link
         else:
             print('start element', name, ' ', str(attrs))
 
 
+""" Reads a Matsim network xml file. Currently, custom attributes are not parsed.
+"""
+
+
 def read(filepath):
     handler = NetworkHandler()
-    sax.parse(filepath, handler)
-    return Network(handler.nodes(), handler.links())
+    with gzip.open(filepath) as file:
+        sax.parse(file, handler)
+    return Network.from_links(handler.links())
