@@ -26,6 +26,12 @@ class EventsHandler(ContentHandler):
         pass  # don't pass characters to save memory
 
 
+class Event:
+
+    def __init__(self, time):
+        self.time = time
+
+
 def read(filepath, callback):
     handler = EventsHandler(callback)
     with gzip.open(filepath) as file:
