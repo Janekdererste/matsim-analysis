@@ -9,14 +9,14 @@ class TestNetworkHandler(TestCase):
         network = MatsimNetworkReader.read('test_network.xml.gz')
 
         # we know how many links and nodes the test network has
-        self.assertEqual(15, len(network.nodes()))
-        self.assertEqual(23, len(network.links()))
+        self.assertEqual(15, len(network.nodes))
+        self.assertEqual(23, len(network.links))
 
         # lets check for present of from and to node of link #1
-        self.assertTrue('1' in network.nodes())
-        self.assertTrue('2' in network.nodes())
-        fromNode = network.nodes()['1']
-        toNode = network.nodes()['2']
+        self.assertTrue('1' in network.nodes)
+        self.assertTrue('2' in network.nodes)
+        fromNode = network.nodes['1']
+        toNode = network.nodes['2']
         self.assertEqual(-20000, fromNode.x)
         self.assertEqual(0, fromNode.y)
         self.assertEqual(1, len(fromNode.in_links))
@@ -25,8 +25,8 @@ class TestNetworkHandler(TestCase):
         self.assertEqual(9, len(toNode.out_links))
 
         # test link #1 with all its attributes
-        self.assertTrue('1' in network.links())
-        link = network.links()['1']
+        self.assertTrue('1' in network.links)
+        link = network.links['1']
         self.assertEqual(fromNode, link.from_node)
         self.assertEqual(toNode, link.to_node)
         self.assertEqual('1', link.id)

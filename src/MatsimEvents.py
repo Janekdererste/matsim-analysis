@@ -1,17 +1,24 @@
-from src import MatsimEventsReader
+class Event:
+
+    def __init__(self, time):
+        self.time = time
 
 
-class LinkEnterEvent(MatsimEventsReader.Event):
-
-    def __init__(self, time, attrs):
-        super().__init__(time)
-        self.vehicleId = attrs['vehicle']
-        self.linkId = attrs['link']
-
-
-class LinkLeaveEvent(MatsimEventsReader.Event):
+class LinkEvent(Event):
 
     def __init__(self, time, attrs):
         super().__init__(time)
-        self.vehicleId = attrs['vehicle']
-        self.linkId = attrs['link']
+        self.vehicle_id = attrs['vehicle']
+        self.link_id = attrs['link']
+
+
+class LinkEnterEvent(LinkEvent):
+
+    def __init__(self, time, attrs):
+        super().__init__(time, attrs)
+
+
+class LinkLeaveEvent(LinkEvent):
+
+    def __init__(self, time, attrs):
+        super().__init__(time, attrs)

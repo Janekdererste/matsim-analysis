@@ -40,9 +40,11 @@ class Link(Entity):
 
 class Network:
 
+    @property
     def links(self):
         return self._links.copy()
 
+    @property
     def nodes(self):
         return self._nodes.copy()
 
@@ -54,19 +56,13 @@ class Network:
     def from_links(cls, links):
         nodes = {}
         for link in links.values():
-            from_node = cls.get_value(nodes, link.from_node.id, link.from_node)
+            # setdefault => f key is in the dictionary, return its value. If not, insert key with a value of default and return default. default defaults to None.
+            from_node = nodes.setdefault(link.from_node.id, link.from_node)
             from_node.add_out_link(link)
-            to_node = cls.get_value(nodes, link.to_node.id, link.to_node)
+            to_node = nodes.setdefault(link.to_node.id, link.to_node)
             to_node.add_in_link(link)
 
         return Network(nodes, links)
-
-    @classmethod
-    def get_value(cls, dict, key, value):
-        if key not in dict:
-            dict[key] = value
-
-        return dict[key]
 
 
 class NetworkHandler(xml.sax.ContentHandler):
